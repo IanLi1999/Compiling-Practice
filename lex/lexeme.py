@@ -30,6 +30,7 @@ class Analyzer:
 
     keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf']
     parenthesis = ['{', '}', '(', ')']
+    white = ['\t', ' ', '\n']
 
     def __init__(self, source_file):
         self.cur_symbol = ''
@@ -43,7 +44,7 @@ class Analyzer:
         while True:
             self.cur_symbol = head
 
-            if head == '':
+            if (head is None) or (head == ''):
                 # empty string for reaching the end of the file
                 return self.symbols
 
@@ -62,34 +63,57 @@ class Analyzer:
             elif head == '/':
                 head = self.comment_matcher()
 
+            elif head in self.white:
+                head = self.source.read(1)
+                continue
+
             else:
                 self.error_handle()
 
     # props = ['id', 'relation_op', 'constant', 'keyword', 'assign_op']
 
     def id_matcher(self):
+        head = self.source.read(1)
         while True:
-            head = self.source.read(1)
 
-            return head
-
-    def constant_matcher(self):
-        while True:
-            head = self.source.read(1)
-
-            return head
-
-    def relation_matcher(self):
-        while True:
-            head = self.source.read(1)
-            if head == '=':
+            if ('a' <= head <= 'z') or ('A' <= head <= 'Z') or (head == '_'):
                 self.cur_symbol += head
+                head = self.source.read(1)
 
             else:
-                self.symbols.append(Symbol('relation_op', self.cur_symbol))
-                self.tokens.append(Token('relation_op', len(self.symbols)-1))
+                break
 
-                return head
+        self.symbols.append(Symbol('id', self.cur_symbol))
+        self.tokens.append(Token('id', len(self.symbols)-1))
+
+        return head
+
+    def constant_matcher(self):
+        head = self.source.read(1)
+        while True:
+
+            if '0' <= head <= '9':
+                self.cur_symbol += head
+                head = self.source.read(1)
+
+            else:
+                break
+
+        self.symbols.append(Symbol('constant', self.cur_symbol))
+        self.tokens.append(Token('constant', len(self.symbols) - 1))
+
+        return head
+
+    def relation_matcher(self):
+        head = self.source.read(1)
+        if head == '=':
+            self.cur_symbol += head
+            head = self.source.read(1)
+
+        self.symbols.append(Symbol('relation_op', self.cur_symbol))
+        self.tokens.append(Token('relation_op', len(self.symbols)-1))
+
+        return head
 
     def assign_or_relation(self):
         while True:
@@ -105,3 +129,10 @@ class Analyzer:
 
     def error_handle(self):
         print("error occur with " + self.cur_symbol)
+
+    def print_tokens(self):
+        for token in self.tokens:
+            print('<{0}, entry #{1}>'.format(token.prop, token.entry))
+
+    def existed(self):
+        pass
