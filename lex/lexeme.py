@@ -1,4 +1,7 @@
-props = ['id', 'relation_op', 'constant', 'keyword', 'assign_op']
+props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
+ops = {'+': 'plus_op', '*': 'mul_op', '/': 'div_op', '-': 'sub_op'}
+rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
+           '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
 
 
 class Token:
@@ -52,7 +55,7 @@ class Analyzer:
                 head = self.id_matcher()
 
             elif '0' <= head <= '9':
-                head = self.constant_matcher()
+                head = self.num_matcher()
 
             elif (head == '>') or (head == '<') or (head == '!'):
                 head = self.relation_matcher()
@@ -70,7 +73,7 @@ class Analyzer:
             else:
                 self.error_handle()
 
-    # props = ['id', 'relation_op', 'constant', 'keyword', 'assign_op']
+    # props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
 
     def id_matcher(self):
         head = self.source.read(1)
@@ -83,12 +86,13 @@ class Analyzer:
             else:
                 break
 
-        self.symbols.append(Symbol('id', self.cur_symbol))
-        self.tokens.append(Token('id', len(self.symbols)-1))
+        if self.cur_symbol not in self.keywords:
+            self.symbols.append(Symbol('id', self.cur_symbol))
+            self.tokens.append(Token('id', '#' + str(len(self.symbols)-1)))
 
         return head
 
-    def constant_matcher(self):
+    def num_matcher(self):
         head = self.source.read(1)
         while True:
 
@@ -99,8 +103,7 @@ class Analyzer:
             else:
                 break
 
-        self.symbols.append(Symbol('constant', self.cur_symbol))
-        self.tokens.append(Token('constant', len(self.symbols) - 1))
+        self.tokens.append(Token('num', self.cur_symbol))
 
         return head
 
@@ -110,8 +113,7 @@ class Analyzer:
             self.cur_symbol += head
             head = self.source.read(1)
 
-        self.symbols.append(Symbol('relation_op', self.cur_symbol))
-        self.tokens.append(Token('relation_op', len(self.symbols)-1))
+        self.tokens.append(Token(rel_ops[self.cur_symbol], ''))
 
         return head
 
@@ -132,7 +134,7 @@ class Analyzer:
 
     def print_tokens(self):
         for token in self.tokens:
-            print('<{0}, entry #{1}>'.format(token.prop, token.entry))
+            print('<{0}, {1}>'.format(token.prop, token.entry))
 
     def existed(self):
         pass
