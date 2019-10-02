@@ -1,5 +1,5 @@
 props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
-ops = {'+': 'plus_op', '*': 'mul_op', '/': 'div_op', '-': 'sub_op'}
+ops = {'+': 'plus_op', '*': 'mul_op', '/': 'div_op', '-': 'sub_op', '=': 'assign_op'}
 rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
            '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
 
@@ -118,10 +118,16 @@ class Analyzer:
         return head
 
     def assign_or_relation(self):
-        while True:
-            head = self.source.read(1)
+        head = self.source.read(1)
 
-            return head
+        if head == '=':
+            self.cur_symbol += head
+            self.tokens.append(Token(rel_ops[self.cur_symbol], ''))
+            head = self.source.read(1)
+        else:
+            self.tokens.append(Token(ops[self.cur_symbol], ''))
+
+        return head
 
     def comment_matcher(self):
         while True:
