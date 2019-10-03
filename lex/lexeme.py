@@ -7,7 +7,7 @@ rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
            '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
 specials = {';': 'delimiter', '#': 'macro', ',': 'comma'}
 placeholders = {'%d': 'int_ref', '%ld': 'long_ref', '%s': 'string_ref', '%f': 'float_ref'}
-keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf']
+keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf', 'long']
 
 
 class Token:
