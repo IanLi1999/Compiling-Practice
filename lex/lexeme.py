@@ -1,7 +1,13 @@
 props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
 ops = {'+': 'plus_op', '*': 'mul_op', '/': 'div_op', '-': 'sub_op', '=': 'assign_op'}
+ops_assign = {'+=': 'mul_assign', '-=': 'abs_assign', '*=': 'mul_assign', '/=': 'div_assign'}
+self_ops = {'++': 'self_inc', '--': 'self_dec'}
+parenthesis = {'{': 'brace_l', '}': 'brace_r', '(': 'bracket_l', ')': 'bracket_r', '[': 'square_l', ']': 'square_r'}
 rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
            '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
+specials = {';': 'delimiter', '#': 'macro', ',': 'comma'}
+placeholders = {'%d': 'int_ref', '%ld': 'long_ref', '%s': 'string_ref', '%f': 'float_ref'}
+keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf']
 
 
 class Token:
@@ -31,8 +37,6 @@ class Analyzer:
     symbols = list()
     tokens = list()
 
-    keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf']
-    parenthesis = ['{', '}', '(', ')']
     white = ['\t', ' ', '\n']
 
     def __init__(self, source_file):
@@ -66,12 +70,25 @@ class Analyzer:
             elif head == '/':
                 head = self.comment_matcher()
 
+            elif head == '"':
+                head = self.string_matcher()
+
             elif head in self.white:
                 head = self.source.read(1)
-                continue
 
+            elif head in ops:
+                head = self.operator_matcher()
+
+            elif head in parenthesis:
+                self.tokens.append(Token(parenthesis[head], head))
+                head = self.source.read(1)
+
+            elif head in specials:
+                self.tokens.append(Token(specials[head], head))
+                head = self.source.read(1)
             else:
                 self.error_handle()
+                break
 
     # props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
 
@@ -86,9 +103,11 @@ class Analyzer:
             else:
                 break
 
-        if self.cur_symbol not in self.keywords:
+        if self.cur_symbol not in keywords:
             self.symbols.append(Symbol('id', self.cur_symbol))
             self.tokens.append(Token('id', '#' + str(len(self.symbols)-1)))
+        else:
+            self.tokens.append(Token('keyword', self.cur_symbol))
 
         return head
 
@@ -117,6 +136,29 @@ class Analyzer:
 
         return head
 
+    def operator_matcher(self):
+        head = self.source.read(1)
+
+        if head == '=':
+            self.cur_symbol += head
+            self.tokens.append(Token(ops_assign[self.cur_symbol], ''))
+            head = self.source.read(1)
+
+        elif head in ['+', '-']:
+            self.cur_symbol += head
+
+            if self.cur_symbol in self_ops:
+                self.tokens.append(Token(self_ops[self.cur_symbol], ''))
+            else:
+                self.error_handle()
+
+            head = self.source.read(1)
+
+        else:
+            self.tokens.append(Token(ops[self.cur_symbol], ''))
+
+        return head
+
     def assign_or_relation(self):
         head = self.source.read(1)
 
@@ -126,6 +168,23 @@ class Analyzer:
             head = self.source.read(1)
         else:
             self.tokens.append(Token(ops[self.cur_symbol], ''))
+
+        return head
+
+    def string_matcher(self):
+        self.tokens.append(Token('quote_l', ''))
+        self.cur_symbol = ''
+        head = self.source.read(1)
+        while True:
+
+            if head == '"':
+                self.tokens.append(Token('string', self.cur_symbol))
+                self.tokens.append(Token('quote_r', ''))
+                head = self.source.read(1)
+                break
+            else:
+                self.cur_symbol += head
+                head = self.source.read(1)
 
         return head
 
@@ -155,7 +214,7 @@ class Analyzer:
         return head
 
     def error_handle(self):
-        print("error occur with " + self.cur_symbol)
+        print("error occur with {0}\n".format(self.cur_symbol))
 
     def print_tokens(self):
         for token in self.tokens:

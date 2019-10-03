@@ -1,14 +1,11 @@
-app = 1
-app == 12
-counter <= 92
+int main()
+{
+    /* this is a program doc
+     * this is a C program used for compiler test
+     * this block is also used for block comment test
+     */
+    long no = 2017211919;
+    // this is my student number, this line also serves as a line comment test
 
-// this is a comment line
-
-pc = 2
-
-/* this is
- * is block
- * comment
- */
-
-good > 3
+    char[20] = "Li Yanjie";
+}
