@@ -130,10 +130,29 @@ class Analyzer:
         return head
 
     def comment_matcher(self):
-        while True:
-            head = self.source.read(1)
+        head = self.source.read(1)
 
-            return head
+        if head == '/':
+            # line comment
+            while True:
+                head = self.source.read(1)
+                if head == '\n':
+                    head = self.source.read(1)
+                    break
+
+        elif head == '*':
+            # block comment
+            while True:
+                head = self.source.read(1)
+                if head == '*':
+                    head = self.source.read(1)
+                    if head == '/':
+                        head = self.source.read(1)
+                        break
+        else:
+            self.error_handle()
+
+        return head
 
     def error_handle(self):
         print("error occur with " + self.cur_symbol)

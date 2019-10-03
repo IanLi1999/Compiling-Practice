@@ -1,3 +1,14 @@
 app = 1
 app == 12
 counter <= 92
+
+// this is a comment line
+
+pc = 2
+
+/* this is
+ * is block
+ * comment
+ */
+
+good > 3
