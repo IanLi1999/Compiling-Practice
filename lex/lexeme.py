@@ -5,7 +5,7 @@ self_ops = {'++': 'self_inc', '--': 'self_dec'}
 parenthesis = {'{': 'brace_l', '}': 'brace_r', '(': 'bracket_l', ')': 'bracket_r', '[': 'square_l', ']': 'square_r'}
 rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
            '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
-specials = {';': 'delimiter', '#': 'macro', ',': 'comma'}
+specials = {';': 'delimiter', '#': 'macro', ',': 'comma', '&': 'at'}
 placeholders = {'%d': 'int_ref', '%ld': 'long_ref', '%s': 'string_ref', '%f': 'float_ref'}
 keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf', 'long']
 
@@ -24,8 +24,7 @@ class Token:
 class Symbol:
     __slots__ = ('prop', 'value')
 
-    def __init__(self, prop, value):
-        self.prop = prop
+    def __init__(self, value):
         self.value = value
 
 
@@ -104,8 +103,8 @@ class Analyzer:
                 break
 
         if self.cur_symbol not in keywords:
-            self.symbols.append(Symbol('id', self.cur_symbol))
-            self.tokens.append(Token('id', '#' + str(len(self.symbols)-1)))
+            self.symbol_allocator()
+            # self.tokens.append(Token('id', '#' + str(len(self.symbols)-1)))
         else:
             self.tokens.append(Token('keyword', self.cur_symbol))
 
@@ -212,6 +211,15 @@ class Analyzer:
             self.error_handle()
 
         return head
+
+    def symbol_allocator(self):
+        for i, symbol in enumerate(self.symbols):
+            if self.cur_symbol == symbol.value:
+                self.tokens.append(Token('id', i))
+                return
+
+        self.symbols.append(Symbol(self.cur_symbol))
+        self.tokens.append(Token('id', len(self.symbols)-1))
 
     def error_handle(self):
         print("error occur with {0}\n".format(self.cur_symbol))

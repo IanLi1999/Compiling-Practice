@@ -1,3 +1,5 @@
+#include "myHeadFile.h"
+
 int main()
 {
     /* this is a program doc
@@ -7,5 +9,11 @@ int main()
     long no = 2017211919;
     // this is my student number, this line also serves as a line comment test
 
-    char[20] = "Li Yanjie";
+    char[20] name = "Li Yanjie";
+
+    if(no > 0) {
+        printf("current user is %s: ", &name);
+    }
+
+    return 0;
 }
