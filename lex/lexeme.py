@@ -1,3 +1,5 @@
+import sys
+
 props = ['id', 'relation_op', 'num', 'keyword', 'assign_op']
 ops = {'+': 'plus_op', '*': 'mul_op', '/': 'div_op', '-': 'sub_op', '=': 'assign_op'}
 ops_assign = {'+=': 'mul_assign', '-=': 'abs_assign', '*=': 'mul_assign', '/=': 'div_assign'}
@@ -6,8 +8,7 @@ parenthesis = {'{': 'brace_l', '}': 'brace_r', '(': 'bracket_l', ')': 'bracket_r
 rel_ops = {'<': 'lt_rel_op', '<=': 'le_rel_op', '>': 'gt_rel_op',
            '>=': 'ge_rel_op', '==': 'et_rel_op', '!=': 'ne_rel_op'}
 specials = {';': 'delimiter', '#': 'macro', ',': 'comma', '&': 'at'}
-placeholders = {'%d': 'int_ref', '%ld': 'long_ref', '%s': 'string_ref', '%f': 'float_ref'}
-keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf', 'long']
+keywords = ['include', 'main', 'int', 'float', 'if', 'else', 'while', 'break', 'printf', 'long', 'for']
 
 
 class Token:
@@ -181,6 +182,7 @@ class Analyzer:
                 self.tokens.append(Token('quote_r', ''))
                 head = self.source.read(1)
                 break
+
             else:
                 self.cur_symbol += head
                 head = self.source.read(1)
@@ -230,3 +232,11 @@ class Analyzer:
 
     def existed(self):
         pass
+
+
+if __name__ == '__main__':
+    # example test file './resource/test.txt'
+    analyzer = Analyzer(sys.argv[1])
+    analyzer.analyze()
+
+    analyzer.print_tokens()
