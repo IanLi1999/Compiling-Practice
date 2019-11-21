@@ -1,6 +1,6 @@
-from lex.lexeme import Analyzer
+from lexeme import Lexical
 
-analyzer = Analyzer('./resource/test.txt')
+analyzer = Lexical('./resource/test.txt')
 analyzer.analyze()
 
 analyzer.print_tokens()

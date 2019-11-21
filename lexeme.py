@@ -29,7 +29,7 @@ class Symbol:
         self.value = value
 
 
-class Analyzer:
+class Lexical:
     # match method for each kind of symbol
 
     # symbols represents symbol manager
@@ -236,7 +236,7 @@ class Analyzer:
 
 if __name__ == '__main__':
     # example test file './resource/test.txt'
-    analyzer = Analyzer(sys.argv[1])
+    analyzer = Lexical(sys.argv[1])
     analyzer.analyze()
 
     analyzer.print_tokens()
