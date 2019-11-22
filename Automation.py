@@ -17,7 +17,6 @@ class Automation:
     def generate_table(self):
         self.generate_collections()
         self.cal_first_follow()
-        print(self.go)
         self.fill_table()
         return self.action, self.goto
 
@@ -168,6 +167,32 @@ class Automation:
         
         return programs
 
+    def result_to_file(self, path):
+        file = open(path, 'w')
+        
+        # write fisrt & follow
+        file.write('FIRST集与fOLLOW集\n')
+        for token in self.v:
+            file.write('FIRST(%s)=%-20s\tFOLLOW(%s)=%-20s\n' % (token, self.first[token], token, self.follow[token]))
+        file.write('\n')
+
+        # write collections
+        file.write('项目集规范族\n')
+        for i, collection in enumerate(self.collections):
+            file.write('I{0}\t{1}\n'.format(i, collection))
+        file.write('\n')
+        
+        # write action & goto table
+        file.write('SLR(1)分析表\n')
+        counter = 0
+        file.write('  \t%-70s\t%-50s\n' % ('Action', 'Goto'))
+        for act, go in zip(self.action, self.goto):
+            file.write('%2d\t%-70s\t%-50s\n' % (counter, act, go))
+        file.write('\n')
+
+        file.flush()
+        file.close()
+
 if __name__ == '__main__':
     example_v = {'S': 0, 'E': 1, 'T': 2, 'F': 3}
     example_t = {'n': 0, '+': 1, '-': 2, '*': 3, '/': 4, '(': 5, ')': 6, '$': 7}
@@ -181,4 +206,4 @@ if __name__ == '__main__':
                    ['F', '(E)'],
                    ['F', 'n']]
     auto = Automation(productions, example_v, example_t, 'S')
-    auto.calculate_table()
+    auto.generate_table()

@@ -14,11 +14,25 @@ class Syntactic:
         self.tokens = None
         self.stack = []
         self.head = None
+        self.auto = None
+        self.file = None        # result file
 
     def analyze(self, filepath):
-        automation = Automation(self.productions, self.v, self.t, self.s)
-        self.action, self.goto = automation.generate_table()
+        # build automation and generate analysis table
+        self.auto = Automation(self.productions, self.v, self.t, self.s)
+        self.action, self.goto = self.auto.generate_table()
+        self.auto.result_to_file('./Syntax Result.txt')
 
+        self.file = open('./Syntax Result.txt', 'a')
+        self.file.write('对输入记号流的分析过程\n')
+
+        self.process(filepath)
+        
+        self.file.flush()
+        self.file.close()
+
+
+    def process(self, filepath):
         self.tokens = open(filepath, 'r')
         self.stack = [[0, '$']]  # stack bottom
         
@@ -27,7 +41,7 @@ class Syntactic:
             state = self.stack[-1][0]
             
             # validate token 
-            if self.head is None or self.head == ' ':
+            if self.head is None or self.head == ' ' or self.head == '':
                 self.head = '$'
 
             if self.head not in self.t:
@@ -41,16 +55,17 @@ class Syntactic:
             if status == 0 or status == -1:
                 return
 
-
     def make_action(self, move):
+        record = deepcopy(self.stack)
         if actions[move[0]] == 'Shift':
             # just to make the code more clear to understand           
             self.stack.append([move[1], deepcopy(self.head)])       # push into stack
             self.head = self.tokens.read(1)                         # shift right
-            if self.head is None or self.head == ' ':
+            if self.head is None or self.head == ' ' or self.head == '':
                 self.head = '$'
 
-            print('%-120s %s %d' % (self.stack, actions[move[0]], move[1]))
+            print('%-120s %s %d' % (record, actions[move[0]], move[1]))
+            self.file.write('%-120s %s %d\n' % (record, actions[move[0]], move[1]))
 
         elif actions[move[0]] == 'Reduce':
             production = self.productions[move[1]]
@@ -66,17 +81,21 @@ class Syntactic:
             self.stack.append([new_state, incoming])
             # push the new state and V into stack 
 
-            print('%-120s%s %s->%s' % (self.stack, actions[move[0]], production[0], production[1]))
+            print('%-120s%s %s->%s' % (record, actions[move[0]], production[0], production[1]))
+            self.file.write('%-120s%s %s->%s\n' % (record, actions[move[0]], production[0], production[1]))
 
         elif actions[move[0]] == 'ACCEPT':
-            print('%-120s %s' % (self.stack, actions[move[0]]))
+            print('%-120s %s' % (record, actions[move[0]]))
+            self.file.write('%-120s %s\n' % (record, actions[move[0]]))
             return 0
     
         elif actions[move[0]] == 'ERROR':
             print('Analysis has been processing, but error occurs')
+            self.file.write('Analysis has been processing, but error occurs\n')
             return -1
         else:
             print('Wrong Move Code of ' + move[0])
+            self.file.write('Wrong Move Code of ' + move[0] + '\n')
             return -1
 
         return 1
@@ -94,42 +113,6 @@ if __name__ == '__main__':
                    ['T', 'F'],
                    ['F', '(E)'],
                    ['F', 'n']]
-    #             # E, T, F
-    # goto_table = [[1, 2, 3],             # 0
-    #             [-1, -1, -1],          # 1
-    #             [-1, -1, -1],          # 2
-    #             [-1, -1, -1],          # 3
-    #             [10, 2, 3],          # 4
-    #             [-1, -1, -1],          # 5
-    #             [-1, 11, 3],           # 6
-    #             [-1, 12, 3],           # 7
-    #             [-1, -1, 13],          # 8
-    #             [-1, -1, 14],          # 9
-    #             [-1, -1, -1],          # 10 
-    #             [-1, -1, -1],          # 11
-    #             [-1, -1, -1],          # 12
-    #             [-1, -1, -1],          # 13
-    #             [-1, -1, -1],          # 14
-    #             [-1, -1, -1]]          # 15
-
-    # # actions = {1: 'Shift', 2: 'Reduce', 3: 'ACCEPT'}
-    # # {'n': 0, '+': 1, '-': 2, '*': 3, '/': 4, '(': 5, ')': 6, '$': 7}
-    # action_table = [[[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 0
-    #                 [[-1], [1, 6], [1, 7], [-1], [-1], [-1], [-1], [3]],   # 1
-    #                 [[-1], [2, 3], [2, 3], [1, 8], [1, 9], [-1], [2, 3], [2, 3]],  # 2
-    #                 [[-1], [2, 6], [2, 6], [2, 6], [2, 6], [-1], [2, 6], [2, 6]],  # 3
-    #                 [[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 4
-    #                 [[-1], [2, 8], [2, 8], [2, 8], [2, 8], [-1], [2, 8], [2, 8]],  # 5
-    #                 [[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 6
-    #                 [[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 7
-    #                 [[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 8
-    #                 [[1, 5], [-1], [-1], [-1], [-1], [1, 4], [-1], [-1]],  # 9
-    #                 [[-1], [1, 6], [1, 7], [-1], [-1], [-1], [1, 15], [-1]],  # 10
-    #                 [[-1], [2, 1], [2, 1], [1, 8], [1, 9], [-1], [2, 1], [2, 1]],  # 11
-    #                 [[-1], [2, 2], [2, 2], [1, 8], [1, 9], [-1], [2, 2], [2, 2]],  # 12
-    #                 [[-1], [2, 4], [2, 4], [2, 4], [2, 4], [-1], [2, 4], [2, 4]],  # 13
-    #                 [[-1], [2, 5], [2, 5], [2, 5], [2, 5], [-1], [2, 5], [2, 5]],  # 14
-    #                 [[-1], [2, 7], [2, 7], [2, 7], [2, 7], [-1], [2, 7], [2, 7]]]  # 15
 
     analyzer = Syntactic(productions, example_v, example_t, 'S')
     analyzer.analyze('./Syntactic Analyzer Test File.txt')
