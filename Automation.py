@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 class Automation:
-    def __init__(self, productions, v, t):
+    def __init__(self, productions, v, t, s):
         self.productions = productions
         self.collections = []
         self.go = {}
@@ -11,18 +11,48 @@ class Automation:
         self.follow = {}
         self.v = v
         self.t = t
+        self.s = s
     
     def calculate_table(self):
         # self.generate_collections()
         self.cal_first_follow()
 
-        for item in self.first:
-            print(item, self.first[item])
+        for item in self.follow:
+            print(item, self.follow[item])
         
     def cal_first_follow(self):
         for token in self.v:
             if token not in self.first:
                 self.cal_first(token)
+        self.cal_follow()
+
+    def cal_follow(self):
+        new_follow = {}     # for comparison use
+
+        for token in self.v:        # initialize all
+            new_follow[token] = []
+
+        new_follow[self.s] = ['$']     # start symbol
+
+        while new_follow != self.follow:
+            self.follow = deepcopy(new_follow)
+            for production in productions:              
+                for i, token in enumerate(production[1]):
+                    if token in self.v:
+                        if i < len(production[1])-1:
+                            if production[1][i+1] in self.v:
+                                # get fisrt or the right
+                                new_follow[token] += self.first[production[1][i+1]]
+                                new_follow[token] = list(set(new_follow[token]))
+                            else:
+                                # get right t
+                                if production[1][i+1] not in new_follow[token]:
+                                    new_follow[token].append(production[1][i+1])
+                        else:
+                            # right get follow from left
+                            new_follow[token] += new_follow[production[0]]
+                            new_follow[token] = list(set(new_follow[token]))
+
 
     def cal_first(self, token):
         for production in self.productions:
@@ -102,7 +132,7 @@ class Automation:
         return programs
 
 if __name__ == '__main__':
-    example_v = {'E': 0, 'T': 1, 'F': 2}
+    example_v = {'S': 0, 'E': 1, 'T': 2, 'F': 3}
     example_t = {'n': 0, '+': 1, '-': 2, '*': 3, '/': 4, '(': 5, ')': 6, '$': 7}
     productions = [['S', 'E'], 
                    ['E', 'E+T'], 
@@ -113,5 +143,5 @@ if __name__ == '__main__':
                    ['T', 'F'],
                    ['F', '(E)'],
                    ['F', 'n']]
-    auto = Automation(productions, example_v, example_t)
+    auto = Automation(productions, example_v, example_t, 'S')
     auto.calculate_table()
