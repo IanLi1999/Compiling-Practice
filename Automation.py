@@ -7,15 +7,43 @@ class Automation:
         self.go = {}
         self.goto = None
         self.action = None
+        self.first = {}
+        self.follow = {}
         self.v = v
         self.t = t
     
     def calculate_table(self):
-        self.generate_collections()
-        for i, collection in enumerate(self.collections):
-            print(i, collection)
-        for items in self.go:
-            print(items, self.go[items])
+        # self.generate_collections()
+        self.cal_first_follow()
+
+        for item in self.first:
+            print(item, self.first[item])
+        
+    def cal_first_follow(self):
+        for token in self.v:
+            if token not in self.first:
+                self.cal_first(token)
+
+    def cal_first(self, token):
+        for production in self.productions:
+            if production[0] == token:
+                if production[1][0] in self.v and production[1][0] != token:
+                    if production[1][0] not in self.first:
+                        part = self.cal_first(production[1][0])
+                    else:
+                        part = self.first[production[1][0]]
+                    if token in self.first:
+                        self.first[token] += part
+                        self.first[token] = list(set(self.first[token]))  # get rid of the repeat items
+                    else:
+                        self.first[token] = part
+                elif production[1][0] in self.t:
+                    if token in self.first and production[1][0] not in self.first[token]:
+                        self.first[token].append(production[1][0])
+                    else:
+                        self.first[token] = [production[1][0]]
+        return self.first[token]
+
     
     def generate_collections(self):
         program_0 = [self.productions[0][0], self.productions[0][1], 0]
