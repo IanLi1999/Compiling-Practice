@@ -1,6 +1,11 @@
 from copy import deepcopy
 actions = {1: 'Shift', 2: 'Reduce', 3: 'ACCEPT', -1: 'ERROR'}
 
+class Node:
+    def __init__(self, token):
+        self.token = token
+        self.children = []
+
 class Syntactic:
     def __init__(self, action, go, productions, v, t):
         self.action = action
@@ -15,20 +20,20 @@ class Syntactic:
     def analyze(self, filepath):
         self.tokens = open(filepath, 'r')
 
-        stack = [[0, '$']]  # stack bottom
+        self.stack = [[0, '$']]  # stack bottom
         
         self.head = self.tokens.read(1)
         while True:
-            state = stack[-1][0]
+            state = self.stack[-1][0]
             
             # validate token 
             if self.head not in self.t:
-                print('Invalid token')
+                print('Invalid token of ' + self.head)
                 return False
 
             move = self.action[state][self.t[self.head]]
             status = self.make_action(move)
-            if status == 0 or status == 1:
+            if status == 0 or status == -1:
                 return
 
 
@@ -37,6 +42,9 @@ class Syntactic:
             # just to make the code more clear to understand           
             self.stack.append([move[1], deepcopy(self.head)])       # push into stack
             self.head = self.tokens.read(1)                         # shift right
+            if self.head is None or self.head == '':
+                self.head = '$'
+            
 
         elif actions[move[0]] == 'Reduce':
             production = self.productions[move[1]]
@@ -46,7 +54,7 @@ class Syntactic:
             
             incoming = production[0]
             old_state = self.stack[-1][0]
-            new_state = self.go[old_state][incoming]
+            new_state = self.go[old_state][self.v[incoming]]
             # calculate new state due to the goto table
 
             self.stack.append([new_state, incoming])
