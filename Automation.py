@@ -9,17 +9,55 @@ class Automation:
         self.action = None
         self.first = {}
         self.follow = {}
+        self.status_total = 0
         self.v = v
         self.t = t
         self.s = s
     
-    def calculate_table(self):
-        # self.generate_collections()
+    def generate_table(self):
+        self.generate_collections()
         self.cal_first_follow()
+        print(self.go)
+        self.fill_table()
+        return self.action, self.goto
 
-        for item in self.follow:
-            print(item, self.follow[item])
+
+    def fill_table(self):
+        # initialize all
+        self.goto = []
+        self.action = []
+        for i in range(0, self.status_total + 1):
+            self.goto.append([])
+            for j in range(0, len(self.v)):
+                self.goto[i].append(-1)
+            self.action.append([])
+            for j in range(0, len(self.t)):
+                self.action[i].append([-1])
         
+        # fill in go and shift 
+        for state in self.go:
+            outs = self.go[state]
+            for out in outs:
+                if out[1] in self.v:
+                    self.goto[state][self.v[out[1]]] = out[0]
+                else:
+                    self.action[state][self.t[out[1]]] = [1, out[0]]
+        
+        # fill in reduce and accept
+        for i, collection in enumerate(self.collections):
+            # collection corresponds to each state's programs
+            # i corresponds to the state number
+            for program in collection:
+                if program[2] == len(program[1]):
+                    # reduce program
+                    if program[0] == self.s:
+                        # ACCEPT program
+                        self.action[i][self.t['$']] = [3]
+                    else:
+                        for token in self.follow[program[0]]:
+                            self.action[i][self.t[token]] = [2, self.productions.index([program[0], program[1]])]
+
+
     def cal_first_follow(self):
         for token in self.v:
             if token not in self.first:
@@ -36,7 +74,7 @@ class Automation:
 
         while new_follow != self.follow:
             self.follow = deepcopy(new_follow)
-            for production in productions:              
+            for production in self.productions:              
                 for i, token in enumerate(production[1]):
                     if token in self.v:
                         if i < len(production[1])-1:
@@ -79,7 +117,6 @@ class Automation:
         program_0 = [self.productions[0][0], self.productions[0][1], 0]
         # ['E', 'E+T', 0-3]
         self.collections.append(self.calculate_closure([program_0]))
-        counter = 0
 
         for i, collection in enumerate(self.collections):
             collections_from = self.partition(collection)        
@@ -88,13 +125,13 @@ class Automation:
                 next_state = -1
                 if result not in self.collections:
                     self.collections.append(result)
-                    counter += 1    # corresponding to the status number
-                    next_state = counter
+                    self.status_total += 1    # corresponding to the status number
+                    next_state = self.status_total
                 else:
                     next_state = self.collections.index(result)
                 
                 if i in self.go:
-                    self.go[i].append([next_state, token])     # counter = go(0, function)
+                    self.go[i].append([next_state, token])     # self.status_total = go(0, function)
                 else:
                     self.go[i] = [[next_state, token]]
             
