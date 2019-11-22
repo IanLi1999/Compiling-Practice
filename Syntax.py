@@ -7,9 +7,9 @@ class Node:
         self.children = []
 
 class Syntactic:
-    def __init__(self, action, go, productions, v, t):
+    def __init__(self, action, goto, productions, v, t):
         self.action = action
-        self.go = go
+        self.goto = goto
         self.productions = productions
         self.v = v
         self.t = t
@@ -60,7 +60,7 @@ class Syntactic:
             
             incoming = production[0]
             old_state = self.stack[-1][0]
-            new_state = self.go[old_state][self.v[incoming]]
+            new_state = self.goto[old_state][self.v[incoming]]
             # calculate new state due to the goto table
 
             self.stack.append([new_state, incoming])
@@ -95,7 +95,7 @@ if __name__ == '__main__':
                    ['F', '(E)'],
                    ['F', 'n']]
                 # E, T, F
-    go_table = [[1, 2, 3],             # 0
+    goto_table = [[1, 2, 3],             # 0
                 [-1, -1, -1],          # 1
                 [-1, -1, -1],          # 2
                 [-1, -1, -1],          # 3
@@ -135,5 +135,5 @@ if __name__ == '__main__':
                     [[-1], [2, 5], [2, 5], [2, 5], [2, 5], [-1], [2, 5], [2, 5]],  # 16
                     [[-1], [2, 7], [2, 7], [2, 7], [2, 7], [-1], [2, 7], [2, 7]]]  # 17
 
-    analyzer = Syntactic(action_table, go_table, productions, example_v, example_t)
+    analyzer = Syntactic(action_table, goto_table, productions, example_v, example_t)
     analyzer.analyze('./Syntactic Analyzer Test File.txt')
