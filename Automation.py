@@ -188,6 +188,7 @@ class Automation:
         file.write('  \t%-70s\t%-50s\n' % ('Action', 'Goto'))
         for act, go in zip(self.action, self.goto):
             file.write('%2d\t%-70s\t%-50s\n' % (counter, act, go))
+            counter += 1
         file.write('\n')
 
         file.flush()
