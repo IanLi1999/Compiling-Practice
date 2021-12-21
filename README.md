@@ -1,52 +1,45 @@
-# 语法分析器实验报告  
+# Syntax Analyzer Exercise Report    
 
-## 实验结果  
+## Result    
 
-完成了对课本要求文法的LR语法分析器实现，包括：  
+Implement a basic syntax analyzer with Python, features including: 
 
-1. 从**输入文法产生式**分析生成非终结符的**FIRST集**与**FOLLOW集**  
-  <img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124114440734.png" alt="image-20191124114440734" style="zoom:40%;" />
+1. Generate **FIRST SET** and **FOLLOW SET** of non-terminal symbols    
+  <img src="screenshots/first-follow-set.png" style="zoom:40%;" />
 
-2. 从**输入文法产生式**分析生成**项目集规范族**  
-  <img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124114534855.png" alt="image-20191124114534855" style="zoom:50%;" />  
+2. Generate **Canonical Collection** of LR(0) items    
+  <img src="screenshots/canonical-collection.png" style="zoom:50%;" />   
 
-3. 从**项目集规范族**以及**FIRST & FOLLOW集**生成**SLR分析表**  
-  <img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124115009631.png" alt="image-20191124115009631" style="zoom: 33%;" />
+3. Generate **SLR Analyzing Table**  
+  <img src="screenshots/analyzing-table.png" style="zoom: 33%;" />  
   
-  其中-1为ERROR状态，action与编号的对应关系如下：  
-  
-  <img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124142000456.png" alt="image-20191124142000456" style="zoom:50%;" />
+  >  `-1` represents `ERROR` status  
 
-4. 从**分析表**与**输入记号流**产生分析过程  
-  <img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124115037067.png" alt="image-20191124115037067" style="zoom: 33%;" /> 
+4. Generate analyze proecss    
+  <img src="screenshots/analyze.png" style="zoom: 33%;" /> 
 
-上述各项中，运行python脚本Syntax.py所在控制台输出的仅有分析过程，其他项均在运行时同时生成的Syntax Result.txt文件中。
+Run `python3 Syntax.py` to see the above results. Only the 4th step is shown in the console, other steps' outputs are stored in the `Syntax Result.txt`.   
 
-## 源码说明  
+## Project Structure    
 
-### 文本文件  
+### Text Files    
 
-`Syntax Result.txt`为分析结果输出文件；
+`Syntax Result.txt` stores the output.  
 
-`Syntatic Analyzer Test File.txt`为测试记号流文件。 
+`Syntatic Analyzer Test File.txt` is the test file for syntax analyzer.   
 
 ### Automation.py  
 
-Automation.py对应从文法产生式输入到分析表生成的处理过程，结构如下图所示，其中：  
+`Automation.py`
+Methods to be used in the analyze progress.  
+- `cal_first(), cal_follow(), cal_first_follow()` 　
+- `generate_collections(), partition(), calculate_closure()`  
+- `generate_table(), fill_table()`  
 
-- `cal_first(), cal_follow(), cal_first_follow()`对应FIRST集FOLLOW集的生成  
-- `generate_collections(), partition(), calculate_closure()`对应项目集规范族的生成  
-- `generate_table(), fill_table()`对应分析表的生成 
-
-<center>
-	<img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124142225463.png" alt="image-20191124142225463" style="zoom:33%;" />  
-</center>
 
 ### Syntax.py  
 
- Syntax.py对应根据分析表对输入记号流进行分析的过程，结构如下图所示，其中：  
+The analyze process, calling methods in Automation.  
 
-- `analyze()`对应调用Automation生成分析表与开始分析过程  
-- `process(), make_action()`对应分析过程  
-
-<center><img src="/Users/bigbrothersue/Library/Application Support/typora-user-images/image-20191124142932301.png" alt="image-20191124142932301" style="zoom:40%;" /></center>  
+- `analyze()`  
+- `process(), make_action()`  
